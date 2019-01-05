@@ -21,7 +21,7 @@ class Stars(Surface):
         coords = self.get_random_coords()
 
         if (randint(0, 100) < animated_spawn_chance):
-          star = Star(150, 0)
+          star = Star(150, randint(0, 8))
           star.rect.move_ip(coords[0], coords[1])
           self.stars.append(star)
         else:
