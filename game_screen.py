@@ -8,7 +8,7 @@ class GameScreen(Surface):
     self.convert()
     self.game = game
 
-    self.stars = Stars(self.game)
+    self.stars = Stars(self.game, 250)
     
     self.player = Player(self.game)
     self.player.rect.move_ip(
@@ -17,8 +17,9 @@ class GameScreen(Surface):
 
   def update(self):
     self.player.update()
+    self.stars.update()
 
   def render(self):
     self.fill((19, 15, 64))
-    self.blit(self.stars, (0, 0))
-    self.blit(self.player.sprite, self.player.rect)
+    self.stars.render(self)
+    self.player.render(self)
