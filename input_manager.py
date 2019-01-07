@@ -10,5 +10,5 @@ class InputManager():
     elif event.type == KEYUP:
       self.keys[event.key] = 0
 
-  def is_key_down(self, key):
+  def key(self, key):
     return key in self.keys and self.keys[key]

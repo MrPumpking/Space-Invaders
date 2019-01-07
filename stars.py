@@ -42,7 +42,7 @@ class Stars(Surface):
     if self.timer.has_passed(80):
       self.scroll += 1
 
-    if self.timer2.has_passed(10):
+    if self.timer2.has_passed(0.5):
       self.parallax_scroll += 1
 
     if self.scroll > self.game.get_height():

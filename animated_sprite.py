@@ -5,8 +5,7 @@ import resources
 class AnimatedSprite(pygame.sprite.Sprite):
   def __init__(self, image_path, sprite_size, frames, scale = 1, animation_speed = 10, start_frame = 0):
     pygame.sprite.Sprite.__init__(self)
-    self.sheet, self.sheet_rect = resources.load_image(image_path)
-    self.sheet = pygame.transform.scale(self.sheet, (self.sheet_rect.width * scale, self.sheet_rect.height * scale))
+    self.sheet, self.sheet_rect = resources.load_image(image_path, scale)
 
     self.scale = scale
     self.sprite_size = sprite_size

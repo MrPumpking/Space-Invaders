@@ -3,7 +3,7 @@ import pygame
 
 working_dir = os.path.dirname(os.path.realpath(__file__))
 
-def load_image(name):
+def load_image(name, scale = 1):
   fullname = os.path.join(working_dir, 'assets', name)
 
   try:
@@ -15,4 +15,7 @@ def load_image(name):
   except pygame.error:
     print('Cannot load image: {}'.format(fullname))
     raise SystemExit
-  return image, image.get_rect()
+  image = pygame.transform.scale(image, (image.get_rect().width * scale, image.get_rect().height * scale))
+  rect = image.get_rect()
+  rect.width, rect.height = rect.width * scale, rect.height * scale
+  return image, rect
