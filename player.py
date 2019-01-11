@@ -5,20 +5,26 @@ from pygame.locals import *
 from animated_sprite import AnimatedSprite
 
 class Player(AnimatedSprite):
-  def __init__(self, game):
+  def __init__(self, screen):
     super().__init__("Lightning.png", 32, 4, 3, 100)
     
-    self.game = game
+    self.screen = screen
+    self.game = screen.game
+
     self.thrust = 1
     self.speed_max = 15
     self.speed_decay = .95
     self.movement_clamp = 10
     self.velocity = pygame.math.Vector2(0, 0)
+    self.shoot_delay = 150
+    self.shoot_timer = Timer()
+    self.shoot_cooldown = False
 
   def update(self):
     super().update()
 
     self.move()
+    self.shoot()
 
   def move(self):
     if self.game.input.key(K_LEFT):
@@ -43,3 +49,12 @@ class Player(AnimatedSprite):
       self.velocity.x = 0
 
     self.rect.move_ip(self.velocity.x, self.velocity.y)
+
+  def shoot(self):
+    if self.shoot_cooldown and self.shoot_timer.has_passed(self.shoot_delay):
+      self.shoot_cooldown = False
+
+    if self.game.input.key(K_SPACE) and not self.shoot_cooldown:
+      self.screen.projectiles.append(Laser(self.rect))
+      self.shoot_cooldown = True
+      self.shoot_timer.restart()

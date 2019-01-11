@@ -7,6 +7,9 @@ class Timer:
   def current_time_ms(self):
     return int(round(time.time() * 1000))
 
+  def restart(self):
+    self.start_time = self.current_time_ms()
+
   def has_passed(self, time):
     current_time = self.current_time_ms()
     has_passed = (current_time - self.start_time) > time
