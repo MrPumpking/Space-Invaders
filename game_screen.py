@@ -34,7 +34,7 @@ class GameScreen(Surface):
 
   def handle_collisions(self):
     collisions = groupcollide(self.enemies, self.projectiles, False, False)
-    print(collisions)
+    # print(collisions)
 
   def update(self):
     self.player.update()
