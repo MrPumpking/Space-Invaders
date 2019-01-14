@@ -1,17 +1,16 @@
 import pygame.math
-from timer import Timer
-from laser import Laser
+from projectile.laser import Laser
 from pygame.locals import *
-from animated_sprite import AnimatedSprite
+from graphics.animated_sprite import AnimatedSprite
+from util.timer import Timer
 
 class Player(AnimatedSprite):
-  def __init__(self, screen):
+  def __init__(self, scene):
     super().__init__("Lightning.png", 32, 4, 3, 100)
-    
-    self.screen = screen
-    self.game = screen.game
+    self.scene = scene
+    self.game = self.scene.game
 
-    self.thrust = 1
+    self.thrust = .8
     self.speed_max = 15
     self.speed_decay = .95
     self.movement_clamp = 10
@@ -55,6 +54,6 @@ class Player(AnimatedSprite):
       self.shoot_cooldown = False
 
     if self.game.input.key(K_SPACE) and not self.shoot_cooldown:
-      self.screen.projectiles.add(Laser(self.rect))
+      self.scene.projectiles.add(Laser(self.rect))
       self.shoot_cooldown = True
       self.shoot_timer.restart()

@@ -1,15 +1,16 @@
-from star import Star
-from timer import Timer
+from graphics.star import Star
+from util.timer import Timer
 from random import randint, seed
 from pygame import Surface, SRCALPHA
 
 class Stars(Surface):
-  def __init__(self, game, amount, spawn_chance = 50, animated_spawn_chance = 10, scale = (1, 3), alpha_range = (50, 100)):
-    Surface.__init__(self, (game.get_width(), game.get_height()), SRCALPHA, 32)
+  def __init__(self, scene, amount, spawn_chance = 50, animated_spawn_chance = 10, scale = (1, 3), alpha_range = (50, 100)):
+    super().__init__((scene.game.get_width(), scene.game.get_height()), SRCALPHA, 32)
     seed()
 
     self.convert_alpha()
-    self.game = game
+    self.scene = scene
+    self.game = scene.game
     self.stars = []
     self.scroll = 100
     self.parallax_scroll = 0
@@ -54,14 +55,14 @@ class Stars(Surface):
     for star in self.stars:
       star.update()
 
-  def render(self, surface):
-    surface.blit(self, (0, self.scroll), (0, 0, self.game.get_width(), self.game.get_height() - self.scroll))
-    surface.blit(self, (0, 0), (0, self.game.get_height() - self.scroll, self.game.get_width(), self.scroll))
+  def render(self):
+    self.scene.blit(self, (0, self.scroll), (0, 0, self.game.get_width(), self.game.get_height() - self.scroll))
+    self.scene.blit(self, (0, 0), (0, self.game.get_height() - self.scroll, self.game.get_width(), self.scroll))
     
     for star in self.stars:
       y = star.rect.top
       coords = (
         star.rect.left,
         abs(self.game.get_height() - y - self.parallax_scroll) if y + self.parallax_scroll > self.game.get_height() else y + self.parallax_scroll)
-      star.render(surface, coords)
+      star.render(self.scene, coords)
 

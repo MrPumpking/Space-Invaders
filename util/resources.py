@@ -1,7 +1,8 @@
 import os
+import sys
 import pygame
 
-working_dir = os.path.dirname(os.path.realpath(__file__))
+working_dir = os.path.dirname(sys.modules['__main__'].__file__)
 
 def load_image(name, scale = 1):
   fullname = os.path.join(working_dir, 'assets', name)

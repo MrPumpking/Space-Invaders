@@ -1,9 +1,8 @@
 import pygame
-from player import Player
 from pygame.locals import *
-from game_screen import GameScreen
-from events.event_manager import EventManager
-from events.input_handler import InputHandler
+from scene.game_scene import GameScene
+from event.event_manager import EventManager
+from event.input_handler import InputHandler
 
 class Game():
   def __init__(self):
@@ -13,7 +12,7 @@ class Game():
     # pygame.mouse.set_visible(0)
 
     self.input = InputHandler(self.events)
-    self.current_screen = GameScreen(self)
+    self.current_scene = GameScene(self)
   
   def get_width(self):
     return self.display.get_size()[0]
@@ -25,9 +24,9 @@ class Game():
     self.events.handle(event)
 
   def update(self):
-    self.current_screen.update()
+    self.current_scene.update()
 
   def render(self):
-    self.current_screen.render()
-    self.display.blit(self.current_screen, (0, 0))
+    self.current_scene.render()
+    self.display.blit(self.current_scene, (0, 0))
     pygame.display.flip()

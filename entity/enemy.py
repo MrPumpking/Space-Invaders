@@ -1,5 +1,5 @@
-from laser import Laser
-from animated_sprite import AnimatedSprite
+from projectile.laser import Laser
+from graphics.animated_sprite import AnimatedSprite
 
 class Enemy(AnimatedSprite):
   def __init__(self, screen, sprite_path):
