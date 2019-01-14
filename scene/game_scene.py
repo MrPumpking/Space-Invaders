@@ -1,8 +1,8 @@
 from scene.scene import Scene
 from graphics.stars import Stars
 from entity.player import Player
-from pygame.sprite import Group
 from entity.enemy import Enemy
+from pygame.sprite import Group, groupcollide, spritecollide
 
 class GameScene(Scene):
   def __init__(self, game):
@@ -30,11 +30,19 @@ class GameScene(Scene):
 
     self.enemies.add(enemy1, enemy2, enemy3, enemy4, enemy5)
 
+  def handle_collisions(self):
+    hit = groupcollide(self.projectiles, self.enemies, True, False)
+    
+    for _, enemies in hit.items():
+      for enemy in enemies:
+        enemy.hit(self.player.weapon_power)
+
   def update(self):
     self.background.update()
     self.projectiles.update()
     self.enemies.update()
     self.player.update()
+    self.handle_collisions()
 
   def render(self):
     self.fill((19, 15, 64))    

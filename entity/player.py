@@ -9,6 +9,7 @@ class Player(AnimatedSprite):
     super().__init__("Lightning.png", 32, 4, 3, 100)
     self.scene = scene
     self.game = self.scene.game
+    self.weapon_power = 1
 
     self.thrust = .8
     self.speed_max = 15
