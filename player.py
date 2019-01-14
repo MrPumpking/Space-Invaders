@@ -55,6 +55,6 @@ class Player(AnimatedSprite):
       self.shoot_cooldown = False
 
     if self.game.input.key(K_SPACE) and not self.shoot_cooldown:
-      self.screen.projectiles.append(Laser(self.rect))
+      self.screen.projectiles.add(Laser(self.rect))
       self.shoot_cooldown = True
       self.shoot_timer.restart()
