@@ -3,9 +3,9 @@ import pygame
 import resources
 
 class AnimatedSprite(pygame.sprite.Sprite):
-  def __init__(self, image_path, sprite_size, frames, scale = 1, animation_speed = 10, start_frame = 0):
+  def __init__(self, image_path, sprite_size, frames = 1, scale = 1, animation_speed = 10, start_frame = 0):
     pygame.sprite.Sprite.__init__(self)
-    self.sheet, self.sheet_rect = resources.load_image(image_path, scale)
+    self._sheet, self._sheet_rect = resources.load_image(image_path, scale)
 
     self.scale = scale
     self.sprite_size = sprite_size
@@ -19,7 +19,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
 
   def render(self, surface, coords = None):
     coords = coords if coords != None else self.rect
-    surface.blit(self.sheet, coords, (self.scaled_size * self.animation_frame, 0, self.scaled_size, self.scaled_size))
+    surface.blit(self._sheet, coords, (self.scaled_size * self.animation_frame, 0, self.scaled_size, self.scaled_size))
 
   def update(self):
     if self.animation_timer.has_passed(self.animation_speed):
