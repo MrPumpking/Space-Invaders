@@ -17,3 +17,6 @@ class Scene(Surface):
 
   def render(self):
     pass
+
+  def kill(self):
+    pass

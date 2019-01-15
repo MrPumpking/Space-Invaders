@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from scene.stage import Stage
 from scene.game_scene import GameScene
 from event.event_manager import EventManager
 from event.input_handler import InputHandler
@@ -13,7 +14,8 @@ class Game():
     # pygame.mouse.set_visible(0)
 
     self.input = InputHandler(self.events)
-    self.current_scene = GameScene(self)
+    self.stage = Stage()
+    self.stage.set_active_scene(GameScene(self))
     
     load_music('loop.ogg')
     pygame.mixer.music.set_volume(0.2)
@@ -29,9 +31,9 @@ class Game():
     self.events.handle(event)
 
   def update(self):
-    self.current_scene.update()
+    self.stage.get_active_scene().update()
 
   def render(self):
-    self.current_scene.render()
-    self.display.blit(self.current_scene, (0, 0))
+    self.stage.get_active_scene().render()
+    self.display.blit(self.stage.get_active_scene(), (0, 0))
     pygame.display.flip()
