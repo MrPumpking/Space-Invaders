@@ -42,7 +42,11 @@ class GameScene(Scene):
     self.waves = [
       Swarm(self, 'waves/1.png'),
       Swarm(self, 'waves/2.png'),
-      Swarm(self, 'waves/3.png')
+      Swarm(self, 'waves/3.png'),
+      Swarm(self, 'waves/4.png'),
+      Swarm(self, 'waves/5.png'),
+      Swarm(self, 'waves/6.png'),
+      Swarm(self, 'waves/7.png'),
     ]
 
     self.spawn_timer = Timer()
