@@ -92,17 +92,29 @@ class Swarm():
 
     return True
 
+  def is_row_empty(self, y):
+    for ship in self.ships:
+      if ship.swarm_y == y:
+        return False
+
+    return True
+
   def on_ship_destroyed(self, ship):
     self.ships.remove(ship)
-    self.shift_swarm(ship.swarm_x)
-    self.scene.game.events.broadcast('SWARM_DESTROYED', {})
+    self.shrink_swarm(ship.swarm_x, ship.swarm_y)
 
-  def shift_swarm(self, x):
+    if len(self.ships) == 0:
+      self.scene.game.events.broadcast('SWARM_DESTROYED', {})
+
+  def shrink_swarm(self, x, y):
     if x == 0 and self.is_column_empty(x):
       self.offset_left = self.scaled_size
 
     elif x == self.width - 1 and self.is_column_empty(x):
       self.offset_right = -self.scaled_size
+
+    elif y == self.height - 1 and self.is_row_empty(y):
+      self.rect.height -= self.scaled_size
 
   def move(self):
     if self.direction == 1 and self.rect.right + self.velocity + self.offset_right > self.scene.game.get_width():

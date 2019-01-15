@@ -4,7 +4,7 @@ from entity.player import Player
 from entity.enemy import Enemy
 from pygame.sprite import Group, groupcollide, spritecollide
 from pygame.font import Font
-from util.resources import get_asset_path
+from util.resources import get_asset_path, load_image
 from entity.swarm import Swarm
 from itertools import chain
 
@@ -12,7 +12,9 @@ class GameScene(Scene):
   def __init__(self, game):
     super().__init__(game, game.display.get_size())
     self.game.events.register_listener('ENEMY_KILLED', self.increase_score)
+    self.game.events.register_listener('SWARM_DESTROYED', self.on_swarm_destroyed)
     self.game.events.register_listener('PLAYER_HEALTH_UPDATE', self.write_health)
+    self.game.events.register_listener('PLAYER_DESTROYED', self.on_player_destroyed)
 
     self.background = Stars(self, 250)
     self.player = Player(self)
@@ -24,14 +26,26 @@ class GameScene(Scene):
     self.projectiles = Group()
     self.enemy_projectiles = Group()
     self.score = 0
+    self.game_over = False
 
     self.font = Font(get_asset_path('dpcomic.ttf'), 32)
     self.write_score()
     self.write_health()
+    
+    self.waves = [
+      Swarm(self, "waves/1.png"),
+      Swarm(self, "waves/2.png")
+    ]
 
-    self.swarm = Swarm(self, "waves/1.png")
-    self.swarm.spawn()
-    self.enemies.add(self.swarm.ships)
+    self.current_wave = self.waves.pop(0)
+    self.spawn_swarm(self.current_wave)
+
+    self.overlay, _ = load_image('overlay.png', width=self.game.get_width(), height=self.game.get_height())
+
+  def spawn_swarm(self, swarm):
+    swarm.ships.clear()
+    swarm.spawn()
+    self.enemies.add(swarm.ships)
 
   def write_score(self):
     self.text_score = self.font.render('Score: {}'.format(self.score), False, (255, 255, 255))
@@ -41,9 +55,25 @@ class GameScene(Scene):
     self.text_health = self.font.render('Health: {}'.format(self.player.health), False, (255, 255, 255))
     self.text_health_shadow = self.font.render('Health: {}'.format(self.player.health), False, (7, 5, 23))
 
+  def write_game_over(self):
+    self.text_gameover = self.font.render('Game Over!', False, (255, 255, 255))
+    self.text_gameover_shadow = self.font.render('Game Over!', False, (7, 5, 23))
+
   def increase_score(self, event):
     self.score += event.points
     self.write_score()
+
+  def on_swarm_destroyed(self, event):
+    if len(self.waves) == 0:
+      print("VICTORY")
+    else:
+      self.current_wave = self.waves.pop(0)
+      self.spawn_swarm(self.current_wave)
+
+  def on_player_destroyed(self, event):
+    self.game_over = True
+    self.write_game_over()
+    self.player.kill()
 
   def handle_collisions(self):
     hit = groupcollide(self.projectiles, self.enemies, True, False)
@@ -51,7 +81,7 @@ class GameScene(Scene):
     for _, enemies in hit.items():
       for enemy in enemies:
         if enemy.hit(self.player.weapon_power):
-          self.swarm.on_ship_destroyed(enemy)
+          self.current_wave.on_ship_destroyed(enemy)
 
     player_hit = spritecollide(self.player, self.enemy_projectiles, True)
     
@@ -68,10 +98,14 @@ class GameScene(Scene):
     self.projectiles.update()
     self.enemy_projectiles.update()
     self.enemies.update()
-    self.player.update()
+    if not self.game_over:
+      self.player.update()
     self.handle_collisions()
     self.handle_projectiles()
-    self.swarm.update()
+    self.current_wave.update()
+    
+    if self.current_wave.rect.top + self.current_wave.rect.height >= self.player.rect.top + 10:
+      self.game.events.broadcast('PLAYER_DESTROYED', {})
 
   def render_text_with_outline(self, text, text_shadow, x, y, outline = 3):
     self.blit(text_shadow, (x - outline, y))
@@ -81,12 +115,21 @@ class GameScene(Scene):
     self.blit(text, (x, y))
 
   def render(self):
-    self.fill((19, 15, 64))    
+    self.fill((19, 15, 64))
     self.background.render()
     self.render_group(self.projectiles)
     self.render_group(self.enemy_projectiles)
     self.render_group(self.enemies)
-    self.player.render(self)
+    
+    if not self.game_over:
+      self.player.render(self)
+    else:
+      self.blit(self.overlay, (0, 0))
+      self.render_text_with_outline(
+        self.text_gameover, self.text_gameover_shadow,
+        self.game.get_width() / 2 - self.text_gameover.get_rect().width / 2,
+        self.game.get_height() / 2 - self.text_gameover.get_rect().height / 2
+      )
 
     self.render_text_with_outline(
       self.text_score, self.text_score_shadow,

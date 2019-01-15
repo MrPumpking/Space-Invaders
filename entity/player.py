@@ -19,12 +19,15 @@ class Player(AnimatedSprite):
     self.shoot_delay = 500
     self.shoot_timer = Timer()
     self.shoot_cooldown = False
-    self.health = 100
+    self.health = 10
     self.weapon_power = 1
 
   def on_hit(self, event):
-    self.health -= event.damage
+    self.health = max(0, self.health - event.damage)
     self.game.events.broadcast('PLAYER_HEALTH_UPDATE', {})
+
+    if self.health <= 0:
+      self.game.events.broadcast('PLAYER_DESTROYED', {})
 
   def update(self):
     super().update()
