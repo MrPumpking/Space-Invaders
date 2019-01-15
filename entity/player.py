@@ -16,10 +16,10 @@ class Player(AnimatedSprite):
     self.speed_decay = .95
     self.movement_clamp = 10
     self.velocity = pygame.math.Vector2(0, 0)
-    self.shoot_delay = 500
+    self.shoot_delay = 250
     self.shoot_timer = Timer()
     self.shoot_cooldown = False
-    self.health = 10
+    self.health = 100
     self.weapon_power = 1
 
   def on_hit(self, event):
@@ -64,6 +64,6 @@ class Player(AnimatedSprite):
       self.shoot_cooldown = False
 
     if self.game.input.key(K_SPACE) and not self.shoot_cooldown:
-      self.scene.projectiles.add(Laser(self.rect, power=self.weapon_power))
+      self.scene.spawn_projectile(self.scene.projectiles, Laser(self.rect, power=self.weapon_power))
       self.shoot_cooldown = True
       self.shoot_timer.restart()

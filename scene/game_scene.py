@@ -6,7 +6,8 @@ from pygame.sprite import Group, groupcollide, spritecollide
 from pygame.font import Font
 from entity.swarm import Swarm
 from itertools import chain
-from util.resources import get_asset_path, load_image, write_to_file
+from util.resources import *
+from util.timer import Timer
 import datetime
 
 class GameScene(Scene):
@@ -27,18 +28,27 @@ class GameScene(Scene):
     self.projectiles = Group()
     self.enemy_projectiles = Group()
     self.score = 0
+
     self.game_over = False
+    self.show_overlay = False
 
     self.font = Font(get_asset_path('dpcomic.ttf'), 32)
     self.write_score()
     self.write_health()
+
+    self.laser_sound = load_sound('laser.ogg')
+    self.laser_sound.set_volume(0.2)
     
     self.waves = [
-      Swarm(self, "waves/1.png"),
-      Swarm(self, "waves/2.png")
+      Swarm(self, 'waves/1.png'),
+      Swarm(self, 'waves/2.png'),
+      Swarm(self, 'waves/3.png')
     ]
 
+    self.spawn_timer = Timer()
+    self.current_wave_id = 1
     self.current_wave = self.waves.pop(0)
+    self.current_wave_active = False
     self.spawn_swarm(self.current_wave)
 
     self.overlay, _ = load_image('overlay.png', width=self.game.get_width(), height=self.game.get_height())
@@ -46,7 +56,13 @@ class GameScene(Scene):
   def spawn_swarm(self, swarm):
     swarm.ships.clear()
     swarm.spawn()
-    self.enemies.add(swarm.ships)
+    self.enemies.add(self.current_wave.ships)  
+    self.spawn_timer.restart()
+    self.write_overlay('Wave {}'.format(self.current_wave_id))
+
+  def spawn_projectile(self, group, projectile):
+    group.add(projectile)
+    self.laser_sound.play()
 
   def write_score(self):
     self.text_score = self.font.render('Score: {}'.format(self.score), False, (255, 255, 255))
@@ -60,18 +76,24 @@ class GameScene(Scene):
     self.text_health = self.font.render('Health: {}'.format(self.player.health), False, (255, 255, 255))
     self.text_health_shadow = self.font.render('Health: {}'.format(self.player.health), False, (7, 5, 23))
 
-  def write_game_over(self):
-    self.text_gameover = self.font.render('Game Over!', False, (255, 255, 255))
-    self.text_gameover_shadow = self.font.render('Game Over!', False, (7, 5, 23))
+  def write_overlay(self, text):
+    self.show_overlay = True
+    self.text_gameover = self.font.render(text, False, (255, 255, 255))
+    self.text_gameover_shadow = self.font.render(text, False, (7, 5, 23))
 
   def increase_score(self, event):
     self.score += event.points
     self.write_score()
 
   def on_swarm_destroyed(self, event):
+    self.current_wave_active = False
+
     if len(self.waves) == 0:
-      print("VICTORY")
+      self.write_overlay('Victory!')
+      self.write_score_to_file()
+      self.game_over = True
     else:
+      self.current_wave_id += 1
       self.current_wave = self.waves.pop(0)
       self.spawn_swarm(self.current_wave)
 
@@ -80,7 +102,7 @@ class GameScene(Scene):
       return
 
     self.game_over = True
-    self.write_game_over()
+    self.write_overlay('Game Over!')
     self.write_score_to_file()
     self.player.kill()
 
@@ -103,13 +125,21 @@ class GameScene(Scene):
         projectile.kill()
 
   def update(self):
+    if self.spawn_timer.has_passed_once(1500):
+      self.current_wave_active = True
+      self.show_overlay = False
+
     self.background.update()
-    self.projectiles.update()
-    self.enemy_projectiles.update()
-    self.enemies.update()
+    
+    if self.current_wave_active:
+      self.projectiles.update()
+      self.enemy_projectiles.update()
+      self.enemies.update()
+
     if not self.game_over:
       self.player.update()
       self.handle_projectiles()
+
     self.handle_collisions()
     self.current_wave.update()
     
@@ -127,12 +157,15 @@ class GameScene(Scene):
     self.fill((19, 15, 64))
     self.background.render()
     self.render_group(self.projectiles)
-    self.render_group(self.enemy_projectiles)
-    self.render_group(self.enemies)
+    
+    if self.current_wave_active:
+      self.render_group(self.enemy_projectiles)
+      self.render_group(self.enemies)
     
     if not self.game_over:
       self.player.render(self)
-    else:
+
+    if self.show_overlay:
       self.blit(self.overlay, (0, 0))
       self.render_text_with_outline(
         self.text_gameover, self.text_gameover_shadow,
