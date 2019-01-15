@@ -4,9 +4,10 @@ from entity.player import Player
 from entity.enemy import Enemy
 from pygame.sprite import Group, groupcollide, spritecollide
 from pygame.font import Font
-from util.resources import get_asset_path, load_image
 from entity.swarm import Swarm
 from itertools import chain
+from util.resources import get_asset_path, load_image, write_to_file
+import datetime
 
 class GameScene(Scene):
   def __init__(self, game):
@@ -51,6 +52,10 @@ class GameScene(Scene):
     self.text_score = self.font.render('Score: {}'.format(self.score), False, (255, 255, 255))
     self.text_score_shadow = self.font.render('Score: {}'.format(self.score), False, (7, 5, 23))
 
+  def write_score_to_file(self):
+    time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    write_to_file('scores.txt', "{} = {}".format(time, self.score))
+
   def write_health(self, event = None):
     self.text_health = self.font.render('Health: {}'.format(self.player.health), False, (255, 255, 255))
     self.text_health_shadow = self.font.render('Health: {}'.format(self.player.health), False, (7, 5, 23))
@@ -71,8 +76,12 @@ class GameScene(Scene):
       self.spawn_swarm(self.current_wave)
 
   def on_player_destroyed(self, event):
+    if self.game_over:
+      return
+
     self.game_over = True
     self.write_game_over()
+    self.write_score_to_file()
     self.player.kill()
 
   def handle_collisions(self):
@@ -100,8 +109,8 @@ class GameScene(Scene):
     self.enemies.update()
     if not self.game_over:
       self.player.update()
+      self.handle_projectiles()
     self.handle_collisions()
-    self.handle_projectiles()
     self.current_wave.update()
     
     if self.current_wave.rect.top + self.current_wave.rect.height >= self.player.rect.top + 10:

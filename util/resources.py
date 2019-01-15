@@ -26,3 +26,8 @@ def load_image(name, scale = 1, alpha = True, width = 0, height = 0):
   rect = image.get_rect()
   rect.width, rect.height = rect.width * scale, rect.height * scale
   return image, rect
+
+def write_to_file(path, value):
+  f = open(os.path.join(working_dir, 'data', path), 'a')
+  f.write(value + '\n')
+  f.close()
