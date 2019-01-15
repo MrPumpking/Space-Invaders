@@ -6,7 +6,7 @@ from util.timer import Timer
 
 class Player(AnimatedSprite):
   def __init__(self, scene):
-    super().__init__("Lightning.png", 32, 4, 3, 100)
+    super().__init__("player.png", 32, 4, 3, 100)
     self.scene = scene
     self.game = self.scene.game
     self.weapon_power = 1
@@ -16,7 +16,7 @@ class Player(AnimatedSprite):
     self.speed_decay = .95
     self.movement_clamp = 10
     self.velocity = pygame.math.Vector2(0, 0)
-    self.shoot_delay = 150
+    self.shoot_delay = 500
     self.shoot_timer = Timer()
     self.shoot_cooldown = False
 

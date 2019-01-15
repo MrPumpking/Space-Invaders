@@ -2,11 +2,14 @@ from projectile.laser import Laser
 from graphics.animated_sprite import AnimatedSprite
 
 class Enemy(AnimatedSprite):
-  def __init__(self, screen, sprite_path, health = 3, points = 50):
-    super().__init__(sprite_path, 32, 4, 3, animation_speed=50)
+  def __init__(self, screen, sprite_path, health = 3, points = 50, weapon = 1):
+    super().__init__(sprite_path, 32, 4, 2, animation_speed=50)
     self.screen = screen
     self.health = health
     self.points = points
+    self.weapon = weapon
+    self.swarm_x = 0
+    self.swarm_y = 0
 
   def hit(self, damage):
     self.health -= damage

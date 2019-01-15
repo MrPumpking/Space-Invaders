@@ -5,6 +5,7 @@ from entity.enemy import Enemy
 from pygame.sprite import Group, groupcollide, spritecollide
 from pygame.font import Font
 from util.resources import get_asset_path
+from entity.swarm import Swarm
 
 class GameScene(Scene):
   def __init__(self, game):
@@ -19,24 +20,17 @@ class GameScene(Scene):
 
     self.enemies = Group()
     self.projectiles = Group()
+    self.enemy_projectiles = Group()
     self.score = 0
-
-
-    enemy1 = Enemy(self, "UFO.png")
-    enemy1.rect.move_ip(0, 0)
-    enemy2 = Enemy(self, "UFO.png")
-    enemy2.rect.move_ip(1 * 3 * 32, 0)
-    enemy3 = Enemy(self, "UFO.png")
-    enemy3.rect.move_ip(2 * 3 * 32, 0)
-    enemy4 = Enemy(self, "UFO.png")
-    enemy4.rect.move_ip(3 * 3 * 32, 0)
-    enemy5 = Enemy(self, "UFO.png")
-    enemy5.rect.move_ip(4 * 3 * 32, 0)
-
-    self.enemies.add(enemy1, enemy2, enemy3, enemy4, enemy5)
 
     self.font = Font(get_asset_path('dpcomic.ttf'), 32)
     self.write_score()
+
+    self.swarm = Swarm(self, "waves/1.png")
+    
+    for ship in self.swarm.ships:
+      if ship != None:
+        self.enemies.add(ship)
 
   def write_score(self):
     self.text_score = self.font.render('Score: {}'.format(self.score), False, (255, 255, 255))
@@ -52,6 +46,8 @@ class GameScene(Scene):
     for _, enemies in hit.items():
       for enemy in enemies:
         enemy.hit(self.player.weapon_power)
+        if not enemy.alive():
+          self.swarm.remove_ship(enemy)
 
   def handle_projectiles(self):
     for projectile in self.projectiles:
@@ -61,11 +57,12 @@ class GameScene(Scene):
   def update(self):
     self.background.update()
     self.projectiles.update()
+    self.enemy_projectiles.update()
     self.enemies.update()
     self.player.update()
     self.handle_collisions()
     self.handle_projectiles()
-    print(self.projectiles)
+    self.swarm.update()
 
   def render_text_with_outline(self, text, text_shadow, x, y, outline = 3):
     self.blit(text_shadow, (x - outline, y))
@@ -78,6 +75,7 @@ class GameScene(Scene):
     self.fill((19, 15, 64))    
     self.background.render()
     self.render_group(self.projectiles)
+    self.render_group(self.enemy_projectiles)
     self.render_group(self.enemies)
     self.player.render(self)
 
