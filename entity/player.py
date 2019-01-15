@@ -9,7 +9,7 @@ class Player(AnimatedSprite):
     super().__init__("player.png", 32, 4, 3, 100)
     self.scene = scene
     self.game = self.scene.game
-    self.weapon_power = 1
+    self.game.events.register_listener('PLAYER_HIT', self.on_hit)
 
     self.thrust = .8
     self.speed_max = 15
@@ -19,6 +19,12 @@ class Player(AnimatedSprite):
     self.shoot_delay = 500
     self.shoot_timer = Timer()
     self.shoot_cooldown = False
+    self.health = 100
+    self.weapon_power = 1
+
+  def on_hit(self, event):
+    self.health -= event.damage
+    self.game.events.broadcast('PLAYER_HEALTH_UPDATE', {})
 
   def update(self):
     super().update()
@@ -55,6 +61,6 @@ class Player(AnimatedSprite):
       self.shoot_cooldown = False
 
     if self.game.input.key(K_SPACE) and not self.shoot_cooldown:
-      self.scene.projectiles.add(Laser(self.rect))
+      self.scene.projectiles.add(Laser(self.rect, power=self.weapon_power))
       self.shoot_cooldown = True
       self.shoot_timer.restart()

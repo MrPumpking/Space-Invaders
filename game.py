@@ -7,7 +7,7 @@ from event.input_handler import InputHandler
 class Game():
   def __init__(self):
     self.events = EventManager()
-    self.display = pygame.display.set_mode((800, 600))
+    self.display = pygame.display.set_mode((1280, 720))
     pygame.display.set_caption("Game Baby")
     # pygame.mouse.set_visible(0)
 

@@ -29,16 +29,20 @@ class Swarm():
     self.map = PixelArray(self.surface)
     self.width = self.map.shape[0]
     self.height = self.map.shape[1]
-    self.ships = [None] * (self.width * self.height)
+    self.ships = []
+    self.ships_layout = [None] * (self.width * self.height)
     self.direction = 1
     self.velocity = 1
     self.timer = Timer()
 
     sprite_size = 32
-    sprite_scale = 2
-    scaled_size = sprite_size * sprite_scale
+    sprite_scale = 3
+    self.scaled_size = sprite_size * sprite_scale
 
-    self.rect = Rect(0, -(self.height - 3) * scaled_size, self.width * scaled_size, self.height * scaled_size)
+    self.offset_left = 0
+    self.offset_right = 0
+
+    self.rect = Rect(0, -(self.height - 3) * self.scaled_size, self.width * self.scaled_size, self.height * self.scaled_size)
     self.decode_map()
 
   def decode_map(self):
@@ -48,11 +52,19 @@ class Swarm():
 
         for code, ship in CODES.items():
           if colour == self.surface.map_rgb(code):
-            ship = ship(self.scene)
-            ship.rect.move_ip(x * ship.scaled_size, y * ship.scaled_size)
-            ship.swarm_x, ship.swarm_y = x, y
-            self.ships[y * self.width + x] = ship
+            self.ships_layout[y * self.width + x] = ship
             continue
+
+  def spawn(self):
+    for y in range(self.height):
+      for x in range(self.width):
+        ship_class = self.ships_layout[y * self.width + x]
+
+        if ship_class != None:
+          ship = ship_class(self.scene)
+          ship.rect.move_ip(x * ship.scaled_size, y * ship.scaled_size)
+          ship.swarm_x, ship.swarm_y = x, y
+          self.ships.append(ship)
 
   def get_ship_at(self, x, y):
     if x < 0 or x > self.width - 1 or y < 0 or y > self.height - 1:
@@ -63,21 +75,41 @@ class Swarm():
     self.rect.top += 16
 
   def get_random_ship(self):
-    return choice([ship for ship in self.ships if ship != None])
+    try:
+      return choice([ship for ship in self.ships if ship.health > 0])
+    except IndexError:
+      return None
 
   def shoot(self):
     ship = self.get_random_ship()
-    self.scene.enemy_projectiles.add(Laser(ship.rect, 1))
+    if ship != None:
+      self.scene.enemy_projectiles.add(Laser(ship.rect, 1, ship.weapon_power))
 
-  def remove_ship(self, ship):
+  def is_column_empty(self, x):
+    for ship in self.ships:
+      if ship.swarm_x == x:
+        return False
+
+    return True
+
+  def on_ship_destroyed(self, ship):
     self.ships.remove(ship)
+    self.shift_swarm(ship.swarm_x)
+    self.scene.game.events.broadcast('SWARM_DESTROYED', {})
+
+  def shift_swarm(self, x):
+    if x == 0 and self.is_column_empty(x):
+      self.offset_left = self.scaled_size
+
+    elif x == self.width - 1 and self.is_column_empty(x):
+      self.offset_right = -self.scaled_size
 
   def move(self):
-    if self.direction == 1 and self.rect.right + self.velocity > self.scene.game.get_width():
+    if self.direction == 1 and self.rect.right + self.velocity + self.offset_right > self.scene.game.get_width():
       self.direction = -1
       self.shift_down()
 
-    elif self.rect.left - self.velocity < 0:
+    elif self.rect.left - self.velocity + self.offset_left < 0:
       self.direction = 1
       self.shift_down()
 
